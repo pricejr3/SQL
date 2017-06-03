@@ -1,0 +1,107 @@
+/* Jarred Price */
+
+
+
+/* 1. Find the movies (MId, Title, ReleaseDate) directed by Martin Scorsese. */
+
+SELECT MId, Title, ReleaseDate   
+FROM Director person, Movie m, Directed direct
+WHERE person.DId = direct.DirectorID AND
+direct.MovieID = m.MId AND person.Name = 'Martin Scorsese';
+
+
+/* 2. Find the directors (DId, Name) that have released a movie with the word 'the' in the 
+      title. Print the Title of the movie as well. */
+
+SELECT DId, Name, Title  /* print title like this? */
+FROM Director person, Movie m, Directed direct
+WHERE direct.MovieID = m.MId AND Title LIKE "%the%" AND
+person.DId = direct.DirectorID;
+
+
+/* 3. Find the directors (DId, Name) that released a movie on their birthday. Print the 
+      ReleaseDate, DateOfBirth, and Title as well. */
+
+SELECT DId, Name, ReleaseDate, DateOfBirth, Title /* print title like this? */
+FROM Director person, Movie m, Directed direct
+WHERE strftime('%m', Dateofbirth) == strftime('%m', ReleaseDate)
+AND strftime('%d', Dateofbirth) == strftime('%d', ReleaseDate) AND
+direct.MovieID = m.MId AND person.DId = direct.DirectorID; 
+
+
+/* 4. Find the movie (Title, Budget) directed by Don Argott that had the largest budget. */
+
+SELECT Title, Budget
+FROM Director person, Movie m, Directed direct
+WHERE person.DId = direct.DirectorID AND
+direct.MovieID = m.Mid AND person.Name = 'Don Argott'
+ORDER BY Budget DESC
+LIMIT 1;
+
+/* 5. For each director (DId, Name) that directed a movie, find and print the average budget 
+      of the movies s/he directed. (Make sure to print the average budget.) */
+
+SELECT DId, Name, AVG(Budget)
+FROM Director person, Movie m, Directed direct
+WHERE direct.MovieID = m.MId AND person.DId = direct.DirectorId
+GROUP BY person.DId, person.Name;
+
+
+/* 6. For each movie (MId, Title), find and print the number of directors. */
+
+SELECT MId, Title, NumberOfDirectors
+FROM(
+  SELECT MovieId, COUNT(*) NumberOfDirectors
+   FROM Directed direct
+   GROUP BY MovieId
+  HAVING NumberOfDirectors > 0
+) direct JOIN movie m
+    ON direct.MovieId = m.MId;
+
+
+
+/* 7. Find the directors (DId, Name) that have directed movies by themselves. */
+
+SELECT DId, Name
+FROM director person JOIN directed X
+ON person.DId = X.DirectorId
+GROUP BY MovieId
+Having Count(*) = 1;
+
+
+
+/* 8. [hard] Find all movies (MId, Title) with the most directors (report ties). 
+      Do not print the number of directors. */
+
+SELECT MId, Title, If_Num_EQUAL_THEY_TIED_2_IS_MORE_DIRECTORS_THAN_1
+FROM(
+  SELECT MovieId, COUNT(*) NumberOfDirectors, Count(*) If_Num_EQUAL_THEY_TIED_2_IS_MORE_DIRECTORS_THAN_1
+   FROM Directed direct
+   GROUP BY MovieId
+  HAVING NumberOfDirectors > 0
+) direct JOIN movie m
+    ON direct.MovieId = m.MId
+ORDER BY If_Num_EQUAL_THEY_TIED_2_IS_MORE_DIRECTORS_THAN_1 DESC;
+
+
+/* 9. [hard] Find the directors (DId, Name) that have never directed a movie with someone 
+      else. Include those directors that have never directed a movie. */
+
+SELECT DId, Name
+FROM Director person LEFT JOIN directed X
+ON person.DId = X.DirectorId
+GROUP BY MovieId
+HAVING Count(*) = 1
+ORDER by DId;
+
+
+
+
+/* 10. [hard] Find the directors (DId, Name) that have directed movies, but never by 
+      themselves. */
+
+SELECT DId, Name
+FROM Director person JOIN directed X
+ON person.DId = X.DirectorId
+GROUP BY MovieId
+HAVING Count(*) > 1;

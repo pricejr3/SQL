@@ -1,0 +1,100 @@
+
+
+/* Create the table STUDENT */
+
+
+CREATE TABLE STUDENT (
+	IdNumber INTEGER,                        
+	Id VARCHAR(50) NOT NULL,        
+	Name VARCHAR(50) NOT NULL,
+	Address VARCHAR(30) NOT NULL,
+	Dateofbirth DATE,                      
+	Phone VARCHAR(50) DEFAULT NULL,
+	PRIMARY KEY (IdNumber)
+);
+
+
+/* Populate the table STUDENT with students from "students.xls" */
+
+INSERT INTO STUDENT VALUES (1, 'alice', 'Alice Smith', '123 Bluebird Lane', '1992-10-10', '123-456-7890');
+INSERT INTO STUDENT VALUES (3, 'bob', 'Bob Doe', '345 Robin Court', '1994-08-08', '123-456-0789');
+INSERT INTO STUDENT VALUES (4, 'carol', 'Carol Smith', '67 Cardinal St', '1993-03-03', '781-123-4567');
+INSERT INTO STUDENT VALUES (5, 'dave', 'Dave Pitt', '67 Cardinal St', '1992-12-12', '781-123-4567');
+INSERT INTO STUDENT VALUES (6, 'eve', 'Eve El', '345 Robin Court', '1992-01-02', NULL);
+INSERT INTO STUDENT VALUES (7, 'frank', 'Frank Smith', '345 Robin Court', '1991-02-03', '507-123-4567');
+INSERT INTO STUDENT VALUES (10, 'gina', 'Gina Gina', '123 Bluebird Lane', '1984-12-17', '507-765-4321');
+INSERT INTO STUDENT VALUES (14, 'harry', 'Harry Potter', '987 Hogwarts Way', '1991-12-24', '608-123-4567');
+INSERT INTO STUDENT VALUES (16, 'irene', 'Irene Doe', '123 Bluebird Lane', '1992-01-02', '608-765-4321');
+INSERT INTO STUDENT VALUES (19, 'jacob', 'Jacob Jones', '67 Cardinal St', '1996-02-29', '781-123-4567');
+
+/* Query 1: Find the id and name of the student with id number 7. */
+
+SELECT Id, Name FROM STUDENT
+WHERE IDNumber = 7;
+
+
+/* Query 2: Find the names of all students living at 345 Robin Court. */
+
+SELECT Name FROM STUDENT
+WHERE Address = '345 Robin Court';
+
+
+/* Query 3: Find all information about the student(s) with phone number 
+            781-123-4567 and born on February 29, 1996. */
+
+SELECT * FROM STUDENT
+WHERE Phone = '781-123-4567'
+AND Dateofbirth = '1996-02-29';
+
+
+/* Query 4: Find the id number of all students born on January 2, 1992 
+            or on March 3, 1993. */
+
+SELECT IdNumber FROM STUDENT
+WHERE Dateofbirth = '1992-01-02' OR Dateofbirth = '1993-03-03';
+
+
+/* Query 5: Find the names of student(s) who do not have a phone number. */
+
+SELECT Name FROM STUDENT
+WHERE Phone IS NULL;
+
+
+/* Query 6*: Find students (ids and names) born in December. */
+SELECT Id, Name FROM STUDENT
+WHERE Dateofbirth LIKE '_____12___';
+
+
+/* Query 7*: Find students (ids and names) whose month of birth and 
+             day of birth are the same (e.g., March 3 is 03-03). 
+   Hint: read about date and time functions in SQLite. */
+
+SELECT Id, Name FROM STUDENT
+WHERE strftime('%m', Dateofbirth) == strftime('%d', Dateofbirth);
+
+
+/* Query 8*: Find students (ids and names) whose names contain a lower case i. 
+   Hint: read about pragma statements in SQLite. */
+
+PRAGMA case_sensitive_like = true;
+SELECT Id, Name FROM STUDENT 
+WHERE Name LIKE "%i%"; 
+
+/* this works too:
+/*SELECT * FROM STUDENT  WHERE instr(Name, 'i') > 0; */
+
+
+/* Query 9*: Find all students (ids and names) whose first name or last name begin 
+             with the upper case letter A. */
+
+PRAGMA case_sensitive_like = true;
+SELECT Id, Name FROM STUDENT
+WHERE Name Like "%A" 
+OR Name Like "A%";
+
+
+/* Query 10*: Find the names of students along with their birthdays, sorted by birthday 
+              (oldest student to youngest). */
+
+SELECT Name, Dateofbirth FROM STUDENT
+ORDER BY Dateofbirth ASC;

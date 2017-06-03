@@ -1,0 +1,134 @@
+/* 1. Find students (sid and name) that took the course 'CS201' in Fall 2008. */
+
+
+SELECT DISTINCT s.sid, s.name
+FROM Student s, section sect, course crs, took t
+WHERE s.sid = t.sid AND sect.secid = t.secid  AND sect.crsid = 'CS201' AND sect.semester = 'F2008';
+
+
+
+/* 2. Find students (sid and name) that did not take 'Calculus'. */
+
+
+SELECT DISTINCT s.sid, s.name
+FROM Student s, section sect, course crs, took t
+WHERE s.sid NOT IN (SELECT s.sid
+FROM Student s, section sect, course crs, took t
+WHERE s.sid = t.sid AND t.secid = sect.secid AND crs.crsid = sect.crsid
+AND crs.cname = 'Calculus');
+
+/* 3. For each course, find the highest score. Print the crsid and highest 
+      score. */
+
+SELECT crs.crsid, MAX(t.score) as highScore
+FROM Course crs
+JOIN Took t on t.secid = sect.secid
+JOIN Section sect on crs.crsid = sect.crsid
+GROUP BY crs.crsid
+order by highScore desc;
+
+
+
+/* 4. Find students (sid, name, crsid, score) that have received the highest (or 
+      tied for the highest) score in a course. */
+
+SELECT sid, name, crsid, max(score)
+FROM student natural join took natural join section
+natural join course
+GROUP BY crsid
+ORDER BY max(score) desc;
+
+
+
+/* WE HAVE A PIECE OF IT FINDING MAX< NEED TIES!  
+ AROUND IT SELECT AGAIN WHERE
+THE SCORE = THE SCORE */
+
+
+/* 5. Find students (sid, name) that have taken exactly one course in the CompSci 
+      department. */
+
+SELECT DISTINCT s.sid, s.name
+FROM Student s
+where Exists (Select * FROM Course crs
+                 JOIN Took t on t.secid = sect.secid
+                 JOIN Section sect on sect.crsid = crs.crsid
+                 WHERE  crs.dept = 'CompSci' 
+                 AND s.sid = t.sid
+                 GROUP BY t.sid
+                 HAVING count(*) = 1);
+
+
+/* 6. Find students (sid, name) that have taken the same course multiple times. 
+      If a student has taken several courses multiple times, print his/her sid
+      and name only once! */
+
+SELECT DISTINCT s.sid, s.name
+FROM Student s
+where Exists (Select * From course crs
+                 JOIN Section sect on sect.crsid = crs.crsid
+                 JOIN Took t on t.secid = sect.secid
+                 WHERE t.sid = s.sid
+                 GROUP BY crs.crsid
+                 HAVING count(*) > 1);
+
+/* 7. Find students (sid, name) that have taken all courses. */
+
+SELECT DISTINCT t.sid, s.name
+FROM took t natural join student s natural join section sect
+GROUP BY t.sid 
+HAVING count(distinct crsid ) = (Select count(*) FROM Course);
+
+
+
+/* 8. Create a view V1 that displays the average grades of domestic students that
+      are athletes. Print sid, name, and average grade. */
+
+
+CREATE VIEW V1
+AS SELECT sid, name, avg(score)
+FROM student natural join took natural join section
+natural join course natural join athlete
+GROUP BY sid
+HAVING isinternational = 0 AND student.sid = athlete.sid
+ORDER BY max(score) desc;
+
+
+
+
+/* 9. Create a view V2 that displays the average grade for each section, ordered 
+      by the course id (crsid) of that section. Print secid, crsid, and average 
+      grade. */
+
+CREATE VIEW V2
+AS SELECT secid, crsid, avg(score)
+FROM student natural join took natural join section
+natural join course  natural join SECTION
+GROUP BY secid
+ORDER BY crsid asc;
+
+
+
+
+/* 10. Create a trigger T that takes care of cases when a score not ranging 
+       between 0 and 100 (inclusive) is inserted into the TOOK table. Write a 
+       comment to explain what your trigger does when such an invalid value is 
+       entered. */
+
+
+
+Create Trigger T After INSERT of SCORE on TOOK
+Begin
+UPDATE Took(null, null , null )
+HAVING SCORE < 0 OR SCORE > 100
+End;
+
+
+/* This TRIGGER T, will UPDATE a secid to NULL, a sid to NULL and a score of NULL
+into TOOK. I am setting them to NULL because since you cannot
+have a score less than 0 or greater than 100, so the
+entire thing is null because secid and id no longer
+hold any value or worth */
+
+
+
